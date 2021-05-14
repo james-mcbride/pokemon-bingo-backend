@@ -1,10 +1,7 @@
 package com.example.pokemonbingoserver.controllers;
 
 import com.example.pokemonbingoserver.models.*;
-import com.example.pokemonbingoserver.repositories.BingoCardRepository;
-import com.example.pokemonbingoserver.repositories.GroupMemberRepository;
-import com.example.pokemonbingoserver.repositories.GroupRepository;
-import com.example.pokemonbingoserver.repositories.UserRepository;
+import com.example.pokemonbingoserver.repositories.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,10 +32,17 @@ public class UserController {
     @Autowired
     private BingoCardRepository bingoCardRepository;
 
+    @Autowired
+    private CollectedCardRepository collectedCardRepository;
+
     @RequestMapping(value="/register", method=RequestMethod.GET, produces="application/json")
     public @ResponseBody
     User postNewUser(@RequestParam(name="firstName", required = false) String firstName, @RequestParam(name="lastName", required = false) String lastName, @RequestParam(name="username", required = false) String username, @RequestParam(name="password", required = false) String password) {
         System.out.println("about to try to save a new user!");
+        System.out.println(firstName);
+        System.out.println(lastName);
+        System.out.println(username);
+        System.out.println(password);
         //create new user
         User newUser = userRepository.save(new User(username, firstName, lastName,password));
 
@@ -60,12 +64,6 @@ public class UserController {
        }
     }
 
-
-    @GetMapping("/register")
-    public String showForm(Model m){
-        return "users/create";
-    }
-
     @RequestMapping(value="/profile/{id}/bingoCards", method=RequestMethod.GET, produces="application/json")
     public @ResponseBody
     List<BingoCard> retrieveUsersBingoCards(@PathVariable long id){
@@ -82,9 +80,29 @@ public class UserController {
     public @ResponseBody
     HashMap<String, Object> retrieveUsersObjects(@PathVariable long id){
         HashMap<String, Object> map = new HashMap<>();
-        map.put("groups", groupRepository.findGroupsByUser(userRepository.getOne(id)));
-        map.put("bingoCards", bingoCardRepository.findBingoCardsByUser(userRepository.getOne(id)));
+        map.put("groups", groupRepository.findGroupsByUser(userRepository.findById(id).get()));
+        map.put("bingoCards", bingoCardRepository.findBingoCardsByUser(userRepository.findById(id).get()));
         return map;
+    }
+
+    @RequestMapping(value="/users/search", method=RequestMethod.GET, produces="application/json")
+    public @ResponseBody
+    List<User> searchUsers(@RequestParam(name="name") String name) {
+        List<User> users=userRepository.findUsersByFirstNameContainingOrLastNameContainingOrUsernameContaining(name, name, name);
+        System.out.println(users.size());
+        return users;
+    }
+
+    @RequestMapping(value="/groups/create", method=RequestMethod.GET, produces="application/json")
+    public @ResponseBody
+     Group  createNewGroup(@RequestParam(name="name") String name, @RequestParam(name="groupMembersList") Integer[] groupMembers, @RequestParam(name="owner") String ownerId){
+        System.out.println("saving a new group");
+        Group group = groupRepository.save(new Group(name, userRepository.getOne(Long.parseLong(ownerId))));
+        groupMemberRepository.save(new GroupMember(group, userRepository.getOne(Long.parseLong(ownerId))));
+        for (int i=0; i<groupMembers.length; i++){
+            groupMemberRepository.save(new GroupMember(group, userRepository.getOne((long) groupMembers[i])));
+        }
+        return group;
     }
 
 }

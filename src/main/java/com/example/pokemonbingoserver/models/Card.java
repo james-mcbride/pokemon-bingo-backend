@@ -12,12 +12,13 @@ public class Card {
 
     public Card(){};
 
-    public Card(String name, String imageURL, String deckSet, long level, long pokedexNumber) {
+    public Card(String name, String imageURL, String deckSet, long level, long pokedexNumber, long hp) {
         this.name = name;
         this.imageURL = imageURL;
         this.deckSet = deckSet;
         this.level = level;
         this.pokedexNumber = pokedexNumber;
+        this.hp=hp;
     }
 
     @Id
@@ -91,6 +92,17 @@ public class Card {
 
     @Column
     private long level;
+
+    public long getHp() {
+        return hp;
+    }
+
+    public void setHp(long hp) {
+        this.hp = hp;
+    }
+
+    @Column
+    private long hp;
 
     @Column
     private long pokedexNumber;

@@ -87,11 +87,11 @@ public class User {
     private String password;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
-    @JsonBackReference
+    @JsonIgnore
     private List<CollectedCard> cards;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
-    @JsonBackReference
+    @JsonIgnore
     private List<GroupMember> groupMembers;
 
     public User(@NotBlank(message = "Username can't be empty") String username, String firstName, String lastName, String password) {

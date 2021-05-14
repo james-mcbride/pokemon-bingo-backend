@@ -53,6 +53,6 @@ public class BingoCard{
 
     @ManyToOne
     @JoinColumn( name= "group_id")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Group group;
 }

@@ -64,11 +64,10 @@ public class Group {
     private User owner;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "group")
-    @JsonBackReference
+    @JsonIgnore
     private List<BingoCard> bingoCards;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "group")
-    @JsonBackReference
     private List<GroupMember> groupMembers;
 
     public Group(String name, User owner) {

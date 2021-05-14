@@ -1,5 +1,6 @@
 package com.example.pokemonbingoserver.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -36,13 +37,12 @@ public class GroupMember {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne (optional = true)
     @JoinColumn( name= "group_id")
-    @JsonManagedReference
+    @JsonIgnore
     private Group group;
 
     @ManyToOne
-    @JsonManagedReference
     @JoinColumn (name = "user_id")
     private User member;
 
