@@ -5,13 +5,16 @@ import com.example.pokemonbingoserver.repositories.*;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,16 +38,11 @@ public class UserController {
     @Autowired
     private CollectedCardRepository collectedCardRepository;
 
-    @RequestMapping(value="/register", method=RequestMethod.GET, produces="application/json")
-    public @ResponseBody
-    User postNewUser(@RequestParam(name="firstName", required = false) String firstName, @RequestParam(name="lastName", required = false) String lastName, @RequestParam(name="username", required = false) String username, @RequestParam(name="password", required = false) String password) {
-        System.out.println("about to try to save a new user!");
-        System.out.println(firstName);
-        System.out.println(lastName);
-        System.out.println(username);
-        System.out.println(password);
+
+    @RequestMapping(value="/register", method=RequestMethod.POST, produces = "application/json")
+    public @ResponseBody User postNewUser(@RequestBody HashMap<String, String> data, HttpServletRequest httpServletRequest){
         //create new user
-        User newUser = userRepository.save(new User(username, firstName, lastName,password));
+        User newUser = userRepository.save(new User(data.get("username"), data.get("firstName"), data.get("lastName"),data.get("password")));
 
         //create new solo group for user to use
         Group newGroup = groupRepository.save(new Group(newUser.getUsername()+"'s solo group", newUser));
@@ -53,16 +51,20 @@ public class UserController {
         return newUser;
     }
 
-    @RequestMapping(value="/login", method=RequestMethod.GET, produces="application/json")
-    public @ResponseBody
-    User loginUser(@RequestParam(name="username") String username, @RequestParam(name="password") String password) {
-       User user=userRepository.findByUsername(username);
-       if (user.getPassword().equals(password)) {
-           return user;
-       } else{
-           return null;
-       }
+
+    @RequestMapping(value="/login", method=RequestMethod.POST, produces = "application/json")
+    public @ResponseBody User login(@RequestBody HashMap<String, String> data, HttpServletRequest httpServletRequest){
+        System.out.println(data.get("username"));
+        System.out.println(data.get("password"));
+        User user=userRepository.findByUsername(data.get("username"));
+        if (user.getPassword().equals(data.get("password"))) {
+            return user;
+        } else{
+            return null;
+        }
     }
+
+
 
     @RequestMapping(value="/profile/{id}/bingoCards", method=RequestMethod.GET, produces="application/json")
     public @ResponseBody
