@@ -82,6 +82,17 @@ public class User {
     @Column(name = "last_name", nullable = false, length = 250)
     private String lastName;
 
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    @Column(name = "profile_picture", nullable = false, length = 250)
+    private String profilePicture;
+
     @Column(nullable = false)
     @JsonIgnore
     private String password;
@@ -94,11 +105,12 @@ public class User {
     @JsonIgnore
     private List<GroupMember> groupMembers;
 
-    public User(@NotBlank(message = "Username can't be empty") String username, String firstName, String lastName, String password) {
+    public User(@NotBlank(message = "Username can't be empty") String username, String firstName, String lastName, String password, String profilePicture) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
+        this.profilePicture=profilePicture;
     }
 
     public User(){

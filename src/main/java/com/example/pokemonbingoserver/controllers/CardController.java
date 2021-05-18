@@ -140,6 +140,12 @@ public class CardController {
         return map;
     }
 
+    @RequestMapping(value="/allCards", method=RequestMethod.GET, produces="application/json")
+    public @ResponseBody
+    List<Card> retrieveImages() {
+        return cardRepository.findAll();
+    }
+
 
 
 }

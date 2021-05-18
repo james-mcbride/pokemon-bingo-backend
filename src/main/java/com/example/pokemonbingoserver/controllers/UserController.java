@@ -42,7 +42,7 @@ public class UserController {
     @RequestMapping(value="/register", method=RequestMethod.POST, produces = "application/json")
     public @ResponseBody User postNewUser(@RequestBody HashMap<String, String> data, HttpServletRequest httpServletRequest){
         //create new user
-        User newUser = userRepository.save(new User(data.get("username"), data.get("firstName"), data.get("lastName"),data.get("password")));
+        User newUser = userRepository.save(new User(data.get("username"), data.get("firstName"), data.get("lastName"),data.get("password"), data.get("profilePicture")));
 
         //create new solo group for user to use
         Group newGroup = groupRepository.save(new Group(newUser.getUsername()+"'s solo group", newUser));
@@ -112,9 +112,12 @@ public class UserController {
     public @ResponseBody
      Group  createNewGroup(@RequestParam(name="name") String name, @RequestParam(name="groupMembersList") Integer[] groupMembers, @RequestParam(name="owner") String ownerId){
         System.out.println("saving a new group");
+        System.out.println(groupMembers.length);
         Group group = groupRepository.save(new Group(name, userRepository.getOne(Long.parseLong(ownerId))));
         groupMemberRepository.save(new GroupMember(group, userRepository.getOne(Long.parseLong(ownerId))));
+
         for (int i=0; i<groupMembers.length; i++){
+            System.out.println(groupMembers[i]);
             groupMemberRepository.save(new GroupMember(group, userRepository.getOne((long) groupMembers[i])));
         }
         return group;
