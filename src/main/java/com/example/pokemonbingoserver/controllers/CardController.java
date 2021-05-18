@@ -1,8 +1,5 @@
 package com.example.pokemonbingoserver.controllers;
-import com.example.pokemonbingoserver.models.BingoCard;
-import com.example.pokemonbingoserver.models.Card;
-import com.example.pokemonbingoserver.models.CollectedCard;
-import com.example.pokemonbingoserver.models.Group;
+import com.example.pokemonbingoserver.models.*;
 import com.example.pokemonbingoserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,12 +67,21 @@ public class CardController {
         }
 
         savedBingo.setCards(cards);
+
+        List<GroupMember> groupMembers = savedBingo.getGroup().getGroupMembers();
+        HashMap<Long, Object> allMemberMatches = new HashMap<>();
+        for (GroupMember groupMember: groupMembers){
+            List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
+            allMemberMatches.put(groupMember.getId(), groupMemberMatches);
+        }
+        savedBingo.setGroupMemberMatches(allMemberMatches);
         return savedBingo;
     }
 
     @RequestMapping(value="/profile/{id}/draw", method=RequestMethod.GET, produces="application/json")
     public @ResponseBody
-    HashMap<String, List<CollectedCard>> retrieveUsersCards(@PathVariable long id, @RequestParam(name="draw") String commitDraw ){
+    HashMap<String, Object> retrieveUsersCards(@PathVariable long id, @RequestParam(name="draw") String commitDraw ){
+        HashMap<String, Object> map = new HashMap<>();
         if (commitDraw.equalsIgnoreCase("yes")) {
             List<Card> cards = cardRepository.findCardsByNameIsNotNullOrderByHp();
             CollectedCard cardDraw = new CollectedCard();
@@ -107,9 +113,29 @@ public class CardController {
                 cardDraw.setCard(cards.get((int) drawNumTwo));
             }
             collectedCardRepository.save(cardDraw);
+
+            //will check and see if new card was previously drawn by owner
+            if (collectedCardRepository.findCollectedCardsByOwnerAndCard(userRepository.getOne(id), cardDraw.getCard()).size()<2){
+                map.put("newCard", true);
+                List<BingoCard> bingoCardMatches = bingoCardRepository.BingoCardCardsByUser(userRepository.findById(id).get(), cardDraw.getCard());
+                for (BingoCard bingoCard: bingoCardMatches){
+                    List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
+                    HashMap<Long, Object> allMemberMatches = new HashMap<>();
+                    for (GroupMember groupMember: groupMembers){
+                        List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
+                        allMemberMatches.put(groupMember.getId(), groupMemberMatches);
+                    }
+                    bingoCard.setGroupMemberMatches(allMemberMatches);
+                }
+                map.put("bingoMatches", bingoCardMatches);
+            } else{
+                map.put("newCard", false);
+            }
         }
 
-        HashMap<String, List<CollectedCard>> map = new HashMap<>();
+
+
+
         map.put("cards", collectedCardRepository.findCollectedCardsByOwner_Id(id));
         return map;
     }

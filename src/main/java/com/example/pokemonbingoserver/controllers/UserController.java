@@ -83,7 +83,20 @@ public class UserController {
     HashMap<String, Object> retrieveUsersObjects(@PathVariable long id){
         HashMap<String, Object> map = new HashMap<>();
         map.put("groups", groupRepository.findGroupsByUser(userRepository.findById(id).get()));
-        map.put("bingoCards", bingoCardRepository.findBingoCardsByUser(userRepository.findById(id).get()));
+
+        List<BingoCard> bingoCards=bingoCardRepository.findBingoCardsByUser(userRepository.findById(id).get());
+
+        for (BingoCard bingoCard: bingoCards){
+            List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
+            HashMap<Long, Object> allMemberMatches = new HashMap<>();
+            for (GroupMember groupMember: groupMembers){
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
+                allMemberMatches.put(groupMember.getId(), groupMemberMatches);
+            }
+            bingoCard.setGroupMemberMatches(allMemberMatches);
+        }
+
+        map.put("bingoCards", bingoCards );
         return map;
     }
 

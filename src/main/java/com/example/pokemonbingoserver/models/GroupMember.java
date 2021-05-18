@@ -1,6 +1,7 @@
 package com.example.pokemonbingoserver.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -44,6 +45,7 @@ public class GroupMember {
 
     @ManyToOne
     @JoinColumn (name = "user_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User member;
 
     public GroupMember(Group group, User member) {

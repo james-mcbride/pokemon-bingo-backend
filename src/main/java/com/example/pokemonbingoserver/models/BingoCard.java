@@ -2,6 +2,7 @@ package com.example.pokemonbingoserver.models;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
+import java.util.HashMap;
 import java.util.List;
 
 @Entity
@@ -55,4 +56,16 @@ public class BingoCard{
     @JoinColumn( name= "group_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Group group;
+
+    public HashMap<Long, Object> getGroupMemberMatches() {
+        return groupMemberMatches;
+    }
+
+    public void setGroupMemberMatches(HashMap<Long, Object> groupMemberMatches) {
+
+        this.groupMemberMatches = groupMemberMatches;
+    }
+
+    @Transient
+    HashMap<Long, Object> groupMemberMatches;
 }
