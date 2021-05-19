@@ -108,17 +108,34 @@ public class UserController {
         return users;
     }
 
-    @RequestMapping(value="/groups/create", method=RequestMethod.GET, produces="application/json")
-    public @ResponseBody
-     Group  createNewGroup(@RequestParam(name="name") String name, @RequestParam(name="groupMembersList") Integer[] groupMembers, @RequestParam(name="owner") String ownerId){
-        System.out.println("saving a new group");
-        System.out.println(groupMembers.length);
-        Group group = groupRepository.save(new Group(name, userRepository.getOne(Long.parseLong(ownerId))));
-        groupMemberRepository.save(new GroupMember(group, userRepository.getOne(Long.parseLong(ownerId))));
+//    @RequestMapping(value="/groups/create", method=RequestMethod.GET, produces="application/json")
+//    public @ResponseBody
+//     Group  createNewGroup(@RequestParam(name="name") String name, @RequestParam(name="groupMembersList") Integer[] groupMembers, @RequestParam(name="owner") String ownerId){
+//        System.out.println("saving a new group");
+//        System.out.println(groupMembers.length);
+//        Group group = groupRepository.save(new Group(name, userRepository.getOne(Long.parseLong(ownerId))));
+//        groupMemberRepository.save(new GroupMember(group, userRepository.getOne(Long.parseLong(ownerId))));
+//
+//        for (int i=0; i<groupMembers.length; i++){
+//            System.out.println(groupMembers[i]);
+//            groupMemberRepository.save(new GroupMember(group, userRepository.getOne((long) groupMembers[i])));
+//        }
+//        return group;
+//    }
+//
+//}
 
-        for (int i=0; i<groupMembers.length; i++){
-            System.out.println(groupMembers[i]);
-            groupMemberRepository.save(new GroupMember(group, userRepository.getOne((long) groupMembers[i])));
+    @RequestMapping(value="/groups/create", method=RequestMethod.POST, produces="application/json")
+    public @ResponseBody Group createGroup(@RequestBody HashMap<String, Object> data, HttpServletRequest httpServletRequest){
+        System.out.println("saving a new group");
+        long ownerId= (int) data.get("owner");
+        Group group = groupRepository.save(new Group((String) data.get("name"), userRepository.getOne(ownerId)));
+        groupMemberRepository.save(new GroupMember(group, userRepository.getOne(ownerId)));
+
+        ArrayList<Integer> groupMembers= (ArrayList<Integer>) data.get("groupMembersList");
+        for (int i=0; i<groupMembers.size(); i++){
+            long userId= groupMembers.get(i);
+            groupMemberRepository.save(new GroupMember(group, userRepository.getOne(userId)));
         }
         return group;
     }
