@@ -90,7 +90,7 @@ public class UserController {
             List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
             HashMap<Long, Object> allMemberMatches = new HashMap<>();
             for (GroupMember groupMember: groupMembers){
-                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt());
                 allMemberMatches.put(groupMember.getId(), groupMemberMatches);
             }
             bingoCard.setGroupMemberMatches(allMemberMatches);

@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name="collected_cards")
@@ -61,6 +63,19 @@ public class CollectedCard {
     @JoinColumn( name= "bingoCard_id")
     @JsonIgnore
     private BingoCard bingoCard;
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column()
+    private Date createdAt;
 
     public CollectedCard(Card card, User owner, BingoCard bingoCard) {
         this.card = card;

@@ -1,7 +1,9 @@
 package com.example.pokemonbingoserver.models;
 import com.fasterxml.jackson.annotation.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,6 +17,7 @@ public class BingoCard{
     public BingoCard(List<CollectedCard> cards, Group group) {
         this.cards = cards;
         this.group = group;
+        this.hasWinner=false;
     }
     public BingoCard( Group group) {
         this.group = group;
@@ -68,4 +71,29 @@ public class BingoCard{
 
     @Transient
     HashMap<Long, Object> groupMemberMatches;
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column()
+    private Date createdAt;
+
+    public boolean isHasWinner() {
+        return hasWinner;
+    }
+
+    public void setHasWinner(boolean hasWinner) {
+        this.hasWinner = hasWinner;
+    }
+
+    @Column()
+    private boolean hasWinner;
+
 }

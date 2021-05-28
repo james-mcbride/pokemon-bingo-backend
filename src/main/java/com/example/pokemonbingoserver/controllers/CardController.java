@@ -50,32 +50,36 @@ public class CardController {
     public @ResponseBody
     BingoCard retrieveNewBingoCard(@PathVariable long id){
         //will save a new bingoCard for the group
-        BingoCard bingoCard=new BingoCard(groupRepository.getOne(id));
-        BingoCard savedBingo = bingoCardRepository.save(bingoCard);
+        if (!bingoCardRepository.existsBingoCardByGroupAndAndHasWinner(groupRepository.getOne(id), false)) {
+            BingoCard bingoCard = new BingoCard(groupRepository.getOne(id));
+            BingoCard savedBingo = bingoCardRepository.save(bingoCard);
 
-        //will randomly grab cards that are stored, and add them to list for bingo
-        List<CollectedCard> cards = new ArrayList<>();
+            //will randomly grab cards that are stored, and add them to list for bingo
+            List<CollectedCard> cards = new ArrayList<>();
 
-        //will grab all cards from database
-        ArrayList<Card> allCards= (ArrayList<Card>) cardRepository.findAll();
-        for (int i=0; i<25; i++){
-            long randomInt = Math.round(Math.random()*(allCards.size()-1));
-            Card card = allCards.get((int) randomInt);
-            CollectedCard collectedCard = collectedCardRepository.save(new CollectedCard(card, bingoCard));
-            cards.add(collectedCard);
-            allCards.remove(card);
+            //will grab all cards from database
+            ArrayList<Card> allCards = (ArrayList<Card>) cardRepository.findAll();
+            for (int i = 0; i < 25; i++) {
+                long randomInt = Math.round(Math.random() * (allCards.size() - 1));
+                Card card = allCards.get((int) randomInt);
+                CollectedCard collectedCard = collectedCardRepository.save(new CollectedCard(card, bingoCard));
+                cards.add(collectedCard);
+                allCards.remove(card);
+            }
+
+            savedBingo.setCards(cards);
+
+            List<GroupMember> groupMembers = savedBingo.getGroup().getGroupMembers();
+            HashMap<Long, Object> allMemberMatches = new HashMap<>();
+            for (GroupMember groupMember : groupMembers) {
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), savedBingo.getCreatedAt());
+                allMemberMatches.put(groupMember.getId(), groupMemberMatches);
+            }
+            savedBingo.setGroupMemberMatches(allMemberMatches);
+            return savedBingo;
+        } else{
+            return bingoCardRepository.findBingoCardByGroupAndHasWinner(groupRepository.getOne(id),false );
         }
-
-        savedBingo.setCards(cards);
-
-        List<GroupMember> groupMembers = savedBingo.getGroup().getGroupMembers();
-        HashMap<Long, Object> allMemberMatches = new HashMap<>();
-        for (GroupMember groupMember: groupMembers){
-            List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
-            allMemberMatches.put(groupMember.getId(), groupMemberMatches);
-        }
-        savedBingo.setGroupMemberMatches(allMemberMatches);
-        return savedBingo;
     }
 
     @RequestMapping(value="/profile/{id}/draw", method=RequestMethod.GET, produces="application/json")
@@ -122,7 +126,7 @@ public class CardController {
                     List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
                     HashMap<Long, Object> allMemberMatches = new HashMap<>();
                     for (GroupMember groupMember: groupMembers){
-                        List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember());
+                        List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt());
                         allMemberMatches.put(groupMember.getId(), groupMemberMatches);
                     }
                     bingoCard.setGroupMemberMatches(allMemberMatches);
