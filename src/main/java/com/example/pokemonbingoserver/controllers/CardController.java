@@ -9,10 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.Time;
+import java.util.*;
 
 @Controller
 public class CardController {
@@ -52,6 +52,9 @@ public class CardController {
         //will save a new bingoCard for the group
         if (!bingoCardRepository.existsBingoCardByGroupAndAndHasWinner(groupRepository.getOne(id), false)) {
             BingoCard bingoCard = new BingoCard(groupRepository.getOne(id));
+            Date date = new GregorianCalendar(2050, Calendar.FEBRUARY, 11).getTime();
+            System.out.println(date);
+            bingoCard.setFinishedAt(date);
             BingoCard savedBingo = bingoCardRepository.save(bingoCard);
 
             //will randomly grab cards that are stored, and add them to list for bingo
@@ -72,7 +75,7 @@ public class CardController {
             List<GroupMember> groupMembers = savedBingo.getGroup().getGroupMembers();
             HashMap<Long, Object> allMemberMatches = new HashMap<>();
             for (GroupMember groupMember : groupMembers) {
-                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), savedBingo.getCreatedAt());
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), savedBingo.getCreatedAt(), savedBingo.getFinishedAt());
                 allMemberMatches.put(groupMember.getId(), groupMemberMatches);
             }
             savedBingo.setGroupMemberMatches(allMemberMatches);
@@ -126,7 +129,7 @@ public class CardController {
                     List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
                     HashMap<Long, Object> allMemberMatches = new HashMap<>();
                     for (GroupMember groupMember: groupMembers){
-                        List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt());
+                        List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt(), bingoCard.getFinishedAt());
                         allMemberMatches.put(groupMember.getId(), groupMemberMatches);
                     }
                     bingoCard.setGroupMemberMatches(allMemberMatches);
@@ -150,6 +153,18 @@ public class CardController {
         return cardRepository.findAll();
     }
 
-
+    @RequestMapping(value="/groups/{id}/bingo/{bingoId}/winner", method=RequestMethod.POST, produces="application/json")
+    public @ResponseBody
+    void postBingoWinner(@PathVariable long id, @PathVariable long bingoId, @RequestBody HashMap<String, String> data, HttpServletRequest httpServletRequest){
+        BingoCard bingoCard = bingoCardRepository.getOne(bingoId);
+        bingoCard.setHasWinner(true);
+        System.out.println(data.get("winner"));
+        System.out.println(id);
+        System.out.println(bingoId);
+        bingoCard.setWinner(data.get("winner"));
+        bingoCard.setFinishedAt(new Date());
+        bingoCardRepository.save(bingoCard);
+        System.out.println("just saved a new bingoCard");
+    }
 
 }

@@ -15,6 +15,6 @@ public interface CollectedCardRepository extends JpaRepository<CollectedCard, Lo
 
     List<CollectedCard> findCollectedCardsByOwnerAndCard(User user, Card card);
 
-    @Query("select c.card.pokedexNumber from CollectedCard c, User u where c.owner=u AND u=?1 AND c.createdAt>?2")
-    List<Long> findUsersCollectedCardIds(User user, Date bingoCardDate);
+    @Query("select c.card.pokedexNumber from CollectedCard c, User u where c.owner=u AND u=?1 AND c.createdAt>?2 AND c.createdAt<?3")
+    List<Long> findUsersCollectedCardIds(User user, Date bingoCardDate, Date bingoCardCompletionDate);
 }

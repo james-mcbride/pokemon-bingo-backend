@@ -90,7 +90,7 @@ public class UserController {
             List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
             HashMap<Long, Object> allMemberMatches = new HashMap<>();
             for (GroupMember groupMember: groupMembers){
-                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt());
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt(), bingoCard.getFinishedAt());
                 allMemberMatches.put(groupMember.getId(), groupMemberMatches);
             }
             bingoCard.setGroupMemberMatches(allMemberMatches);
@@ -138,6 +138,28 @@ public class UserController {
             groupMemberRepository.save(new GroupMember(group, userRepository.getOne(userId)));
         }
         return group;
+    }
+
+    @RequestMapping(value="/group/{id}", method=RequestMethod.GET, produces="application/json")
+    public @ResponseBody
+    HashMap<String, Object> retrieveGroupInfo(@PathVariable long id){
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("group", groupRepository.findById(id).get());
+
+        List<BingoCard> bingoCards=bingoCardRepository.findBingoCardsByGroup_Id(id);
+
+        for (BingoCard bingoCard: bingoCards){
+            List<GroupMember> groupMembers = bingoCard.getGroup().getGroupMembers();
+            HashMap<Long, Object> allMemberMatches = new HashMap<>();
+            for (GroupMember groupMember: groupMembers){
+                List<Long> groupMemberMatches = collectedCardRepository.findUsersCollectedCardIds(groupMember.getMember(), bingoCard.getCreatedAt(), bingoCard.getFinishedAt());
+                allMemberMatches.put(groupMember.getId(), groupMemberMatches);
+            }
+            bingoCard.setGroupMemberMatches(allMemberMatches);
+        }
+        map.put("bingoCards", bingoCards);
+
+        return map;
     }
 
 }

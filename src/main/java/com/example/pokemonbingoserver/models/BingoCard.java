@@ -18,6 +18,7 @@ public class BingoCard{
         this.cards = cards;
         this.group = group;
         this.hasWinner=false;
+
     }
     public BingoCard( Group group) {
         this.group = group;
@@ -95,5 +96,28 @@ public class BingoCard{
 
     @Column()
     private boolean hasWinner;
+
+    public String getWinner() {
+        return winner;
+    }
+
+    public void setWinner(String winner) {
+        this.winner = winner;
+    }
+
+    @Column()
+    private String winner;
+
+    public Date getFinishedAt() {
+        return finishedAt;
+    }
+
+    public void setFinishedAt(Date finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    @Column()
+    private Date finishedAt;
+
 
 }
